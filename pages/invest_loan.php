@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         if ($_POST['action'] === 'add_investment') {
             $amount = $_POST['invest_amount'];
-            $note = isset($_POST['invest_note']) ? $_POST['invest_note'] : null;
+            $note = $_POST['invest_note'] ?? null;
             $date = $_POST['invest_date'];
 
             $stmt = $conn->prepare("INSERT INTO investments (amount, note, date) VALUES (?, ?, ?)");
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         } elseif ($_POST['action'] === 'add_loan') {
             $amount = $_POST['loan_amount'];
-            $note = isset($_POST['loan_note']) ? $_POST['loan_note'] : null;
+            $note = $_POST['loan_note'] ?? null;
             $date = $_POST['loan_date'];
 
             $stmt = $conn->prepare("INSERT INTO loans (amount, note, date) VALUES (?, ?, ?)");
@@ -26,19 +26,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Fetch totals
+$totalInvest = $conn->query("SELECT SUM(amount) as total FROM investments")->fetch_assoc()['total'] ?? 0;
+$totalLoan = $conn->query("SELECT SUM(amount) as total FROM loans")->fetch_assoc()['total'] ?? 0;
+$netInvest = $totalInvest - $totalLoan;
+
 // Fetch investments and loans
 $investments = $conn->query("SELECT * FROM investments ORDER BY date DESC");
 $loans = $conn->query("SELECT * FROM loans ORDER BY date DESC");
 ?>
 
-<h2>ইনভেস্ট ও লোন</h2>
-<div class="mb-3">
-    <button class="btn btn-primary" onclick="showInvestPopup()">নতুন ইনভেস্টমেন্ট</button>
-    <button class="btn btn-primary" onclick="showLoanPopup()">নতুন লোন/উত্তোলন</button>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">ইনভেস্ট ও লোন</h3>
+    <div>
+        <button class="btn btn-sm btn-primary me-2" onclick="showInvestPopup()">নতুন ইনভেস্টমেন্ট</button>
+        <button class="btn btn-sm btn-success" onclick="showLoanPopup()">নতুন লোন/উত্তোলন</button>
+    </div>
 </div>
 
-<h3>ইনভেস্টমেন্ট</h3>
-<table class="table table-bordered">
+<div class="row mb-4">
+    <div class="col-md-4 mb-2">
+        <div class="card shadow-sm border-start border-primary">
+            <div class="card-body">
+                <h6 class="text-muted">মোট ইনভেস্টমেন্ট</h6>
+                <h4 class="text-primary fw-bold">৳<?= number_format($totalInvest, 2) ?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card shadow-sm border-start border-danger">
+            <div class="card-body">
+                <h6 class="text-muted">মোট লোন</h6>
+                <h4 class="text-danger fw-bold">৳<?= number_format($totalLoan, 2) ?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card shadow-sm border-start border-success">
+            <div class="card-body">
+                <h6 class="text-muted">নেট ইনভেস্টমেন্ট</h6>
+                <h4 class="text-success fw-bold">৳<?= number_format($netInvest, 2) ?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mt-4">ইনভেস্টমেন্ট</h5>
+<table class="table table-bordered table-sm table-striped">
     <thead>
         <tr>
             <th>তারিখ</th>
@@ -49,16 +83,16 @@ $loans = $conn->query("SELECT * FROM loans ORDER BY date DESC");
     <tbody>
         <?php while ($investment = $investments->fetch_assoc()): ?>
             <tr>
-                <td><?php echo $investment['date']; ?></td>
-                <td>৳<?php echo number_format($investment['amount'], 2); ?></td>
-                <td><?php echo htmlspecialchars($investment['note'] ?? '-'); ?></td>
+                <td><?= htmlspecialchars($investment['date']) ?></td>
+                <td>৳<?= number_format($investment['amount'], 2) ?></td>
+                <td><?= htmlspecialchars($investment['note'] ?? '-') ?></td>
             </tr>
         <?php endwhile; ?>
     </tbody>
 </table>
 
-<h3>লোন/উত্তোলন</h3>
-<table class="table table-bordered">
+<h5 class="mt-4">লোন/উত্তোলন</h5>
+<table class="table table-bordered table-sm table-striped">
     <thead>
         <tr>
             <th>তারিখ</th>
@@ -69,9 +103,9 @@ $loans = $conn->query("SELECT * FROM loans ORDER BY date DESC");
     <tbody>
         <?php while ($loan = $loans->fetch_assoc()): ?>
             <tr>
-                <td><?php echo $loan['date']; ?></td>
-                <td>৳<?php echo number_format($loan['amount'], 2); ?></td>
-                <td><?php echo htmlspecialchars($loan['note'] ?? '-'); ?></td>
+                <td><?= htmlspecialchars($loan['date']) ?></td>
+                <td>৳<?= number_format($loan['amount'], 2) ?></td>
+                <td><?= htmlspecialchars($loan['note'] ?? '-') ?></td>
             </tr>
         <?php endwhile; ?>
     </tbody>

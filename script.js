@@ -130,6 +130,8 @@ function showFieldOfCostPopup() {
 }
 
 function showAddNewCostPopup() {
+    const options = document.getElementById('hidden-cost-fields').innerHTML;
+
     const body = `
         <form id="addCostForm">
             <div class="mb-3">
@@ -138,7 +140,9 @@ function showAddNewCostPopup() {
             </div>
             <div class="mb-3">
                 <label>খরচের ক্ষেত্র <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="cost_field" required>
+                <select name="cost_field" class="form-select" required>
+                    ${options}
+                </select>
             </div>
             <div class="mb-3">
                 <label>পরিমাণ <span class="text-danger">*</span></label>
@@ -159,23 +163,6 @@ function showAddNewCostPopup() {
         <button type="button" class="btn btn-primary" onclick="submitForm('addCostForm', 'add_cost', '?page=cost')">সংরক্ষণ করুন</button>
     `;
     showModal('নতুন খরচ যোগ করুন', body, footer);
-}
-
-// Bank Functions
-function showAccountsPopup() {
-    const body = `
-        <form id="addAccountForm">
-            <div class="mb-3">
-                <label>ব্যাংকের নাম <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="bank_name" required>
-            </div>
-        </form>
-    `;
-    const footer = `
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">বন্ধ করুন</button>
-        <button type="button" class="btn btn-primary" onclick="submitForm('addAccountForm', 'add_account', '?page=bank')">সংরক্ষণ করুন</button>
-    `;
-    showModal('নতুন ব্যাংক অ্যাকাউন্ট যোগ করুন', body, footer);
 }
 
 function showNewTransactionPopup() {

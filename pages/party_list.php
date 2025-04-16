@@ -5,17 +5,15 @@ require_once BASE_PATH . 'db.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_party') {
     $party_type = $_POST['party_type'] ?? '';
     $party_name = $_POST['party_name'] ?? '';
-    $mobile_number = !empty($_POST['mobile_number']) ? $_POST['mobile_number'] : null;
+    $phone = !empty($_POST['mobile_number']) ? $_POST['mobile_number'] : null;
     $address = !empty($_POST['address']) ? $_POST['address'] : null;
     $due_amount = isset($_POST['due_amount']) && $_POST['due_amount'] !== '' ? (float)$_POST['due_amount'] : 0.00;
 
-    // Validate required fields
     if (empty($party_type) || empty($party_name)) {
         echo "<div class='alert alert-danger'>পার্টির ধরণ এবং নাম আবশ্যক।</div>";
     } else {
-        // Prepare and execute the insert query
-        $stmt = $conn->prepare("INSERT INTO parties (type, name, mobile_number, address, due_amount) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssds", $party_type, $party_name, $mobile_number, $address, $due_amount);
+        $stmt = $conn->prepare("INSERT INTO parties (type, name, phone, address, due_amount) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssds", $party_type, $party_name, $phone, $address, $due_amount);
         
         if ($stmt->execute()) {
             echo "<div class='alert alert-success'>পার্টি সফলভাবে যোগ করা হয়েছে।</div>";
@@ -25,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt->close();
     }
 }
+
 
 // Fetch suppliers and customers
 $suppliers = $conn->query("SELECT * FROM parties WHERE type='supplier'");
